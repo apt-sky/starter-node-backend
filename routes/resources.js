@@ -1,12 +1,14 @@
 var mongoClient = require('mongodb').MongoClient;
-var config = require(./config.js);
+var config = require('./config.js');
 
+// Set an environment varaible on the machine for each config
 if (process.env.NODE_ENV === 'aws') {
     var url = config.mongo.aws_url;
 } else {
     var url = config.mongo.local_url;
 }
 
+// Connecting to MongoDB
 var mongodb;
 mongoClient.connect(url, function (err, db) {
     if (!err) {
@@ -18,7 +20,7 @@ mongoClient.connect(url, function (err, db) {
 });
 
 exports.getHealthCheck = function(req,res) {
-	res.send("Welcome to the Starter-node-backend App");
+	res.send("Health Check OK");
 }
 
 exports.getAll = function(req, res) {
@@ -30,8 +32,60 @@ exports.getAll = function(req, res) {
 	});
 };
 
-exports.getOneById = function(req, res) {};
-exports.createOne = function(req, res) {};
-exports.deleteOneById = function(req,res) {};
-export.updateOneById = function(req,res) {};
+exports.getOneById = function(req, res) {
+    var id = req.params.id;
+    console.log("Getting Restaurant by id : " + id);
+    mongodb.collection('restaurants', function (err, collection) {
 
+        if (id === 'random') {
+            console.log("Generating random id for getting restaurant");
+            collection.stats(function(err, stats){
+                var random = Math.random() * (stats.count - 0) + 0;
+                console.log("Random number generated : " + random);
+                collection.find().limit(-1).skip(random).next(function(err, item){
+                    console.log("Returning restaurant : " + item.name);
+                    res.send(item);
+                })
+            });
+        } else {
+            collection.findOne({_id:id}).toArray(function (err, item) {
+                console.log("Returning restaurant : " + item.name);
+                res.send(item);
+            });
+        }
+    });
+};
+
+exports.createOne = function(req, res) {
+    var body = req.body;
+    console.log('Adding one resource: ' + JSON.stringify(body));
+
+    mongodb.createCollection('resources', function (err, collection) {
+        collection.insert(body, {safe: true}, function (err, result) {
+            if (err) {
+                console.log("Error posting data");
+                res.status(500).send({Error: "Error adding an data to the resources collection"});
+            } else {
+                console.log("Success posting data");
+                res.send(result[0]);
+            }
+        });
+    });
+};
+
+exports.deleteOneById = function(req,res) {
+    var id = req.params.id;
+    console.log("Deleting Resource by id : " + id);
+    mongodb.collection('resources', function (err, collection) {
+        collection.remove({_id:id}, function(err, result){
+            if (err) {
+                res.status(500).send({'error':'An error has occurred - ' + err});
+            } else {
+                console.log('' + result + ' document(s) deleted');
+                res.send(req.body);
+            }
+        })
+    });
+};
+
+exports.updateOneById = function(req,res) {};

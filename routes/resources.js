@@ -1,5 +1,6 @@
 var mongoClient = require('mongodb').MongoClient;
 var config = require('./config.js');
+var util = require('util');
 
 // Set an environment varaible on the machine for each config
 if (process.env.NODE_ENV === 'aws') {
@@ -63,11 +64,11 @@ exports.createOne = function(req, res) {
     mongodb.createCollection('resources', function (err, collection) {
         collection.insert(body, {safe: true}, function (err, result) {
             if (err) {
-                console.log("Error posting data");
+                console.log("Error posting data with error: " + util.inspect(err, false, null));
                 res.status(500).send({Error: "Error adding an data to the resources collection"});
             } else {
-                console.log("Success posting data");
-                res.send(result[0]);
+                console.log("Success posting data with response: " + util.inspect(result.ops, false, null));
+                res.send(result.ops);
             }
         });
     });

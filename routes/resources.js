@@ -66,12 +66,12 @@ exports.deleteOneById = function(req,res) {
     var id = req.params.id;
     console.log("Deleting Resource by id : " + id);
     mongodb.collection('resources', function (err, collection) {
-        collection.remove({_id:id}, function(err, result){
+        collection.remove({"_id": new objectId(id)}, function(err, result){
             if (err) {
                 res.status(500).send({'error':'An error has occurred - ' + err});
             } else {
                 console.log('' + result + ' document(s) deleted');
-                res.send(req.body);
+                res.send(result);
             }
         })
     });

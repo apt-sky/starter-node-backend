@@ -1,4 +1,5 @@
 var mongoClient = require('mongodb').MongoClient;
+var objectId = require('mongodb').ObjectID;
 var config = require('./config.js');
 var util = require('util');
 
@@ -35,25 +36,12 @@ exports.getAll = function(req, res) {
 
 exports.getOneById = function(req, res) {
     var id = req.params.id;
-    console.log("Getting Restaurant by id : " + id);
-    mongodb.collection('restaurants', function (err, collection) {
-
-        if (id === 'random') {
-            console.log("Generating random id for getting restaurant");
-            collection.stats(function(err, stats){
-                var random = Math.random() * (stats.count - 0) + 0;
-                console.log("Random number generated : " + random);
-                collection.find().limit(-1).skip(random).next(function(err, item){
-                    console.log("Returning restaurant : " + item.name);
-                    res.send(item);
-                })
-            });
-        } else {
-            collection.findOne({_id:id}).toArray(function (err, item) {
-                console.log("Returning restaurant : " + item.name);
-                res.send(item);
-            });
-        }
+    console.log("Getting Resource by id : " + id);
+    mongodb.collection('resources', function (err, collection) {
+        collection.find({"_id": new objectId(id)}).toArray(function (err, item) {
+            console.log("Returning resource : " + util.inspect(item, false, null));
+            res.send(item);
+        });
     });
 };
 

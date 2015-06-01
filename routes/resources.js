@@ -77,4 +77,19 @@ exports.deleteOneById = function(req,res) {
     });
 };
 
-exports.updateOneById = function(req,res) {};
+exports.updateOneById = function(req,res) {
+    var body = req.body;
+    var id = req.params.id;
+    console.log('Updating one resource: ' + JSON.stringify(body) + ' by id: ' + id);
+
+    mongodb.collection('resources').update({"_id": new objectId(id)}, { $set: body }, function(err, result){
+        if (err) {
+            res.status(500).send({'error':'An error has occurred - ' + err});
+        } else {
+            console.log('' + result + ' document(s) updated');
+            res.send(result);
+        }
+    })
+
+
+};
